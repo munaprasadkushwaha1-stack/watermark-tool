@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watermark Studio Pro</title>
+  <title>Watermark Studio Pro (Photo & Video)</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -54,41 +54,46 @@
     .gallery-count { font-size: 12px; font-weight: 500; background: #e2e8f0; padding: 2px 8px; border-radius: 12px; color: var(--text-muted); }
 
     .gallery { display: flex; flex-direction: column; gap: 16px; }
-    .photo-card { background: var(--card-bg); border-radius: var(--radius); padding: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
-    .photo-wrapper { width: 100%; border-radius: 10px; overflow: hidden; background: #0f172a; text-align: center; }
-    .photo-card img { width: 100%; max-height: 400px; object-fit: contain; display: block; }
+    .media-card { background: var(--card-bg); border-radius: var(--radius); padding: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .media-wrapper { width: 100%; border-radius: 10px; overflow: hidden; background: #0f172a; text-align: center; position: relative; }
+    .media-card img, .media-card video { width: 100%; max-height: 400px; object-fit: contain; display: block; }
     
-    .photo-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding: 0 4px; }
-    .photo-name { font-size: 13px; font-weight: 500; color: var(--text-muted); width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .media-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding: 0 4px; gap: 8px; }
+    .media-name { font-size: 13px; font-weight: 500; color: var(--text-muted); width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     
-    .btn-download { background: var(--primary); color: #ffffff; text-decoration: none; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; transition: 0.2s; }
+    .btn-download { background: var(--primary); color: #ffffff; text-decoration: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; transition: 0.2s; white-space: nowrap; }
     .btn-download:active { background: var(--primary-hover); transform: scale(0.98); }
+    .btn-download:disabled { background: #94a3b8; cursor: not-allowed; }
+    
+    .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; margin-right: 6px; }
+    .badge-photo { background: #dbeafe; color: #1e40af; }
+    .badge-video { background: #fef3c7; color: #92400e; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <div class="header">
-    <h1>Watermark Studio</h1>
-    <p>Add custom watermarks instantly on your phone</p>
+    <h1>Watermark Studio Pro</h1>
+    <p>Add watermarks to Photos & Videos instantly</p>
   </div>
 
   <div class="card">
     <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-      <span class="upload-icon">📸</span>
-      <div class="upload-title">Select Photos</div>
-      <div class="upload-subtitle">Tap to choose one or multiple images</div>
-      <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
+      <span class="upload-icon">📸 🎥</span>
+      <div class="upload-title">Select Photos or Videos</div>
+      <div class="upload-subtitle">Tap to choose images or video files</div>
+      <input type="file" id="fileInput" multiple accept="image/*,video/*" onchange="handleFiles(this.files)">
     </div>
 
     <div class="form-group">
       <label>Watermark Text</label>
-      <input type="text" id="wmText" value="THE HIGHLIGHTS NEPAL" oninput="processImages()">
+      <input type="text" id="wmText" value="THE HIGHLIGHTS NEPAL" oninput="processAll()">
     </div>
 
     <div class="form-group">
       <label>Position</label>
-      <select id="wmPosition" onchange="processImages()">
+      <select id="wmPosition" onchange="processAll()">
         <option value="tile">Repeated Pattern (Grid Tile)</option>
         <option value="center">Center</option>
         <option value="bottom-right">Bottom Right</option>
@@ -97,13 +102,13 @@
     </div>
 
     <div class="form-group">
-      <label>Text Size <span id="sizeVal">20px</span></label>
-      <input type="range" class="range-slider" id="wmSize" min="10" max="60" value="22" oninput="updateVal('sizeVal', this.value + 'px'); processImages();">
+      <label>Text Size <span id="sizeVal">22px</span></label>
+      <input type="range" class="range-slider" id="wmSize" min="10" max="60" value="22" oninput="updateVal('sizeVal', this.value + 'px'); processAll();">
     </div>
 
     <div class="form-group">
       <label>Opacity <span id="opacityVal">30%</span></label>
-      <input type="range" class="range-slider" id="wmOpacity" min="5" max="100" value="30" oninput="updateVal('opacityVal', this.value + '%'); processImages();">
+      <input type="range" class="range-slider" id="wmOpacity" min="5" max="100" value="30" oninput="updateVal('opacityVal', this.value + '%'); processAll();">
     </div>
 
     <div class="form-group">
@@ -125,14 +130,14 @@
   <div id="galleryContainer" style="display: none;">
     <div class="gallery-title">
       Preview & Download
-      <span class="gallery-count" id="imageCount">0 Photos</span>
+      <span class="gallery-count" id="mediaCount">0 Files</span>
     </div>
     <div class="gallery" id="gallery"></div>
   </div>
 </div>
 
 <script>
-  let loadedImages = [];
+  let loadedFiles = [];
   let currentColor = '#ffffff';
 
   function updateVal(id, val) {
@@ -143,105 +148,184 @@
     currentColor = color;
     document.querySelectorAll('.swatch').forEach(btn => btn.classList.remove('active'));
     elem.classList.add('active');
-    processImages();
+    processAll();
   }
 
   function handleFiles(files) {
     if(!files.length) return;
-    loadedImages = [];
-    let readCount = 0;
-    
+    loadedFiles = [];
     document.getElementById('galleryContainer').style.display = 'block';
 
-    for (let file of files) {
-      let reader = new FileReader();
-      reader.onload = function(e) {
+    Array.from(files).forEach((file) => {
+      const isVideo = file.type.startsWith('video/');
+      const fileObj = { file: file, isVideo: isVideo, name: file.name, url: URL.createObjectURL(file) };
+      
+      if (!isVideo) {
         let img = new Image();
         img.onload = function() {
-          loadedImages.push({ img: img, name: file.name });
-          readCount++;
-          if (readCount === files.length) {
-            processImages();
-          }
+          fileObj.img = img;
+          processAll();
         };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
+        img.src = fileObj.url;
+      }
+      loadedFiles.push(fileObj);
+    });
+    
+    processAll();
   }
 
-  function processImages() {
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = '';
-
-    document.getElementById('imageCount').innerText = `${loadedImages.length} Photo${loadedImages.length > 1 ? 's' : ''}`;
-
+  function drawWatermarkOnCanvas(ctx, width, height) {
     const text = document.getElementById('wmText').value || 'Watermark';
     const position = document.getElementById('wmPosition').value;
     const size = parseInt(document.getElementById('wmSize').value);
     const opacity = parseInt(document.getElementById('wmOpacity').value) / 100;
 
-    loadedImages.forEach((item) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      canvas.width = item.img.width;
-      canvas.height = item.img.height;
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = currentColor;
+    const fontSize = Math.max(16, (width / 900) * size * 2.2);
+    ctx.font = `600 ${fontSize}px 'Plus Jakarta Sans', sans-serif`;
 
-      ctx.drawImage(item.img, 0, 0);
-
-      ctx.globalAlpha = opacity;
-      ctx.fillStyle = currentColor;
-      const fontSize = Math.max(16, (canvas.width / 900) * size * 2.2);
-      ctx.font = `600 ${fontSize}px 'Plus Jakarta Sans', sans-serif`;
-
-      if (position === 'tile') {
-        ctx.rotate(-22 * Math.PI / 180);
-        const stepX = fontSize * 9;
-        const stepY = fontSize * 4.5;
-        for (let x = -canvas.width; x < canvas.width * 2; x += stepX) {
-          for (let y = -canvas.height; y < canvas.height * 2; y += stepY) {
-            ctx.fillText(text, x, y);
-          }
+    if (position === 'tile') {
+      ctx.rotate(-22 * Math.PI / 180);
+      const stepX = fontSize * 9;
+      const stepY = fontSize * 4.5;
+      for (let x = -width; x < width * 2; x += stepX) {
+        for (let y = -height; y < height * 2; y += stepY) {
+          ctx.fillText(text, x, y);
         }
-      } else if (position === 'center') {
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-      } else if (position === 'bottom-right') {
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        const margin = canvas.width * 0.03;
-        ctx.fillText(text, canvas.width - margin, canvas.height - margin);
-      } else if (position === 'bottom-left') {
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        const margin = canvas.width * 0.03;
-        ctx.fillText(text, margin, canvas.height - margin);
       }
+    } else if (position === 'center') {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, width / 2, height / 2);
+    } else if (position === 'bottom-right') {
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      const margin = width * 0.03;
+      ctx.fillText(text, width - margin, height - margin);
+    } else if (position === 'bottom-left') {
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      const margin = width * 0.03;
+      ctx.fillText(text, margin, height - margin);
+    }
+    ctx.restore();
+  }
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  function processAll() {
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
 
+    document.getElementById('mediaCount').innerText = `${loadedFiles.length} File${loadedFiles.length > 1 ? 's' : ''}`;
+
+    loadedFiles.forEach((item, index) => {
       const card = document.createElement('div');
-      card.className = 'photo-card';
+      card.className = 'media-card';
 
-      card.innerHTML = `
-        <div class="photo-wrapper">
-          <img src="${dataUrl}" alt="Watermarked Photo">
-        </div>
-        <div class="photo-footer">
-          <span class="photo-name">${item.name}</span>
-          <a href="${dataUrl}" download="WM_${item.name}" class="btn-download">
-            <span>📥 Download</span>
-          </a>
-        </div>
-      `;
+      if (!item.isVideo && item.img) {
+        // Handle Photo
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = item.img.width;
+        canvas.height = item.img.height;
+
+        ctx.drawImage(item.img, 0, 0);
+        drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+        card.innerHTML = `
+          <div class="media-wrapper">
+            <img src="${dataUrl}" alt="Watermarked Photo">
+          </div>
+          <div class="media-footer">
+            <span class="media-name"><span class="badge badge-photo">Photo</span>${item.name}</span>
+            <a href="${dataUrl}" download="WM_${item.name}" class="btn-download">
+              <span>📥 Download</span>
+            </a>
+          </div>
+        `;
+      } else if (item.isVideo) {
+        // Handle Video
+        card.innerHTML = `
+          <div class="media-wrapper">
+            <video id="vid_${index}" src="${item.url}" controls playsinline muted loop></video>
+          </div>
+          <div class="media-footer">
+            <span class="media-name"><span class="badge badge-video">Video</span>${item.name}</span>
+            <button class="btn-download" id="btn_vid_${index}" onclick="renderVideo(${index})">
+              <span>🎬 Render & Download Video</span>
+            </button>
+          </div>
+        `;
+      }
 
       gallery.appendChild(card);
     });
+  }
+
+  async function renderVideo(index) {
+    const item = loadedFiles[index];
+    const btn = document.getElementById(`btn_vid_${index}`);
+    const video = document.getElementById(`vid_${index}`);
+    
+    btn.disabled = true;
+    btn.innerText = "⏳ Processing Video...";
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = video.videoWidth || 720;
+    canvas.height = video.videoHeight || 1280;
+
+    const stream = canvas.captureStream(30);
+    
+    let mimeType = 'video/webm';
+    if (MediaRecorder.isTypeSupported('video/mp4')) {
+      mimeType = 'video/mp4';
+    }
+
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+    const chunks = [];
+
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mimeType });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `WM_${item.name.replace(/\.[^/.]+$/, "")}.webm`;
+      a.click();
+      
+      btn.disabled = false;
+      btn.innerText = "✅ Download Complete!";
+      setTimeout(() => { btn.innerText = "🎬 Render & Download Video"; }, 3000);
+    };
+
+    video.currentTime = 0;
+    await video.play();
+    mediaRecorder.start();
+
+    function processFrame() {
+      if (video.paused || video.ended) {
+        mediaRecorder.stop();
+        return;
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
+      requestAnimationFrame(processFrame);
+    }
+
+    processFrame();
+
+    video.onended = () => {
+      if (mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+      }
+    };
   }
 </script>
 
 </body>
 </html>
-
